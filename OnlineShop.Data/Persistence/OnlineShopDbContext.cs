@@ -10,12 +10,12 @@ namespace OnlineShop.Data.Persistence
         {
         }
 
-        DbSet<Customer> Customers { get; set; }
-        DbSet<Employee> Employees { get; set; }
-        DbSet<Order> Orders { get; set; }
-        DbSet<Product> Products { get; set; }
-        DbSet<Role> Roles { get; set; }
-        DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserAccount> UserAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,10 @@ namespace OnlineShop.Data.Persistence
                 .Entity<Order>()
                 .Property(order => order.OrderStatus)
                 .HasConversion(new EnumToStringConverter<OrderStatus>());
+
+            modelBuilder
+                .Entity<Product>()
+                .ToTable("Products");
         }
     }
 }

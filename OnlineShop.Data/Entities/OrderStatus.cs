@@ -1,6 +1,6 @@
 ﻿namespace OnlineShop.Data.Entities
 {
-    internal enum OrderStatus
+    public enum OrderStatus
     {
         Pending = 1,
         Accepted = 2,

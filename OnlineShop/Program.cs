@@ -10,6 +10,10 @@ builder.Services.AddDbContext<OnlineShopDbContext>(options => options.UseSqlServ
 
 var app = builder.Build();
 
+using var scopes = app.Services.CreateScope();
+var services = scopes.ServiceProvider;
+DbInitializer.Seed(services);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
