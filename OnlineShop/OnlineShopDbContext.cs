@@ -6,9 +6,7 @@ namespace OnlineShop.Data.Persistence
 {
     public class OnlineShopDbContext : DbContext
     {
-        public OnlineShopDbContext(DbContextOptions<OnlineShopDbContext> options) : base(options)
-        {
-        }
+        public OnlineShopDbContext(DbContextOptions<OnlineShopDbContext> options) : base(options) { }
 
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Employee> Employees { get; set; }
@@ -23,10 +21,6 @@ namespace OnlineShop.Data.Persistence
                 .Entity<Order>()
                 .Property(order => order.OrderStatus)
                 .HasConversion(new EnumToStringConverter<OrderStatus>());
-
-            modelBuilder
-                .Entity<Product>()
-                .ToTable("Products");
         }
     }
 }
