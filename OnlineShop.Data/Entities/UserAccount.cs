@@ -1,6 +1,6 @@
 ﻿namespace OnlineShop.Data.Entities
 {
-    public class UserAccount
+    public abstract class UserAccount
     {
         public int Id { get; set; }
         public string Username { get; set; }
