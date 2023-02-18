@@ -10,8 +10,8 @@ using OnlineShop.DbContexts;
 
 namespace OnlineShop.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(OnlineShopDbContext))]
+    partial class OnlineShopDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -86,6 +86,10 @@ namespace OnlineShop.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -137,6 +141,10 @@ namespace OnlineShop.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -220,6 +228,107 @@ namespace OnlineShop.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShop.Data.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ETA")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Available")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.UserAccount", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("UserAccount");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Customer", b =>
+                {
+                    b.HasBaseType("OnlineShop.Data.Entities.UserAccount");
+
+                    b.HasDiscriminator().HasValue("Customer");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Employee", b =>
+                {
+                    b.HasBaseType("OnlineShop.Data.Entities.UserAccount");
+
+                    b.Property<DateTime>("HireDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Salary")
+                        .HasColumnType("int");
+
+                    b.HasDiscriminator().HasValue("Employee");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -269,6 +378,38 @@ namespace OnlineShop.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Order", b =>
+                {
+                    b.HasOne("OnlineShop.Data.Entities.Customer", "Customer")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Product", b =>
+                {
+                    b.HasOne("OnlineShop.Data.Entities.Customer", null)
+                        .WithMany("WishlistProducts")
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("OnlineShop.Data.Entities.Order", null)
+                        .WithMany("Products")
+                        .HasForeignKey("OrderId");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Order", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.Customer", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("WishlistProducts");
                 });
 #pragma warning restore 612, 618
         }

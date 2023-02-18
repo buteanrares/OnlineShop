@@ -5,7 +5,17 @@ namespace OnlineShop.Models
     public class RegisterViewModel
     {
         [Required]
-        public string Username { get; set; }
+        public string UserName { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        [Required]
+        [DataType(DataType.DateTime)]
+        public DateTime DateOfBirth { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

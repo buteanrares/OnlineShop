@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OnlineShop.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuthentication : Migration
+    public partial class MergeContexts : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +30,11 @@ namespace OnlineShop.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Salary = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -156,6 +161,55 @@ namespace OnlineShop.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ETA = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    OrderStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_AspNetUsers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Price = table.Column<double>(type: "float", nullable: false),
+                    Stock = table.Column<int>(type: "int", nullable: false),
+                    Available = table.Column<bool>(type: "bit", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    OrderId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_AspNetUsers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Products_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -194,6 +248,21 @@ namespace OnlineShop.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_CustomerId",
+                table: "Orders",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CustomerId",
+                table: "Products",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_OrderId",
+                table: "Products",
+                column: "OrderId");
         }
 
         /// <inheritdoc />
@@ -215,7 +284,13 @@ namespace OnlineShop.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

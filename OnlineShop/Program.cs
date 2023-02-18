@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using OnlineShop.Data.Entities;
 using OnlineShop.DbContexts;
 
 
@@ -10,9 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.AddDbContext<OnlineShopDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineShop")));
-builder.Services.AddDbContextPool<AuthDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineShopIdentity")));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AuthDbContext>();
+builder.Services.AddDbContextPool<OnlineShopDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineShop")));
+builder.Services.AddIdentity<UserAccount, IdentityRole>().AddEntityFrameworkStores<OnlineShopDbContext>();
+
+builder.Services.ConfigureApplicationCookie(config =>
+{
+    config.LoginPath = "/Auth/Login";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

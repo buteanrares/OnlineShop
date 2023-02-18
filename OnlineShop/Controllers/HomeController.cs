@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models;
 using System.Diagnostics;
 
@@ -18,6 +19,7 @@ namespace OnlineShop.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Privacy()
         {
             return View();
@@ -32,7 +34,7 @@ namespace OnlineShop.Controllers
 
         public IActionResult Register()
         {
-            return View(new RegisterViewModel { Username="rares"});
+            return View(new RegisterViewModel { UserName="rares"});
         }
     }
 }
