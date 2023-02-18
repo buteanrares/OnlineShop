@@ -1,5 +1,5 @@
 ﻿using OnlineShop.Data.Entities;
-using OnlineShop.Data.Persistence;
+using OnlineShop.DbContexts;
 
 namespace OnlineShop.Services
 {

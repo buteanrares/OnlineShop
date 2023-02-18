@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Data.Entities;
-using OnlineShop.Data.Persistence;
+using OnlineShop.DbContexts;
 
 namespace OnlineShop.Controllers
 {
@@ -28,7 +28,7 @@ namespace OnlineShop.Controllers
         }
 
         // GET: Customers/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string? id)
         {
             if (id == null || _context.Customers == null)
             {
@@ -88,7 +88,7 @@ namespace OnlineShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Password,FirstName,LastName")] Customer customer)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Username,Password,FirstName,LastName")] Customer customer)
         {
             if (id != customer.Id)
             {
@@ -119,7 +119,7 @@ namespace OnlineShop.Controllers
         }
 
         // GET: Customers/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string? id)
         {
             if (id == null || _context.Customers == null)
             {
@@ -155,7 +155,7 @@ namespace OnlineShop.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CustomerExists(int id)
+        private bool CustomerExists(string id)
         {
             return (_context.Customers?.Any(e => e.Id == id)).GetValueOrDefault();
         }

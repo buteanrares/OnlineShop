@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Data.Entities;
-using OnlineShop.Data.Persistence;
+using OnlineShop.DbContexts;
 
 namespace OnlineShop.Controllers
 {
