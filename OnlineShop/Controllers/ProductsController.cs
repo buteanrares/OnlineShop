@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Data.Entities;
 using OnlineShop.DbContexts;
@@ -13,10 +10,12 @@ namespace OnlineShop.Controllers
     public class ProductsController : Controller
     {
         private readonly OnlineShopDbContext _context;
+        private UserManager<UserAccount> UserManager;
 
-        public ProductsController(OnlineShopDbContext context)
+        public ProductsController(OnlineShopDbContext context, UserManager<UserAccount> userManager)
         {
             _context = context;
+            UserManager = userManager;
         }
 
         // GET: Products
@@ -24,7 +23,7 @@ namespace OnlineShop.Controllers
         {
             return _context.Products != null ?
                         View(await _context.Products.ToListAsync()) :
-                        Problem("Entity set 'OnlineShopDbContext.Products'  is null.");
+                        Problem("Entity set 'OnlineShopDbContext.Products' is null.");
         }
 
         // GET: Products/Details/5
@@ -46,17 +45,16 @@ namespace OnlineShop.Controllers
         }
 
         // GET: Products/Create
+        //[Authorize(Policy = "OnlyEmployees")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        //[Authorize(Policy = "OnlyEmployees")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,Available")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -153,6 +151,69 @@ namespace OnlineShop.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Cart()
+        {
+            var customerProducts = from cp in _context.CustomerProductCarts
+                                   join p in _context.Products
+                                   on cp.ProductId equals p.Id
+                                   where cp.CustomerId == User.FindFirstValue(ClaimTypes.NameIdentifier)
+                                   select p;
+            return View(customerProducts);
+        }
+
+        public async Task<IActionResult> AddToCart(int? id)
+        {
+            if (id == null || _context.Products == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddToCart(int id)
+        {
+            var product = _context.Products.Find(id);
+            if (product != null && id != null)
+            {
+                var cp = new CustomerProductCart()
+                {
+                    CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    ProductId = (int)id
+                };
+                if (!_context.CustomerProductCarts.Any(f => f.CustomerId == cp.CustomerId && f.ProductId == cp.ProductId))
+                {
+                    _context.CustomerProductCarts.Add(cp);
+                    _context.SaveChanges();
+                }
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost, ActionName("RemoveFromCart")]
+        [ValidateAntiForgeryToken]
+        public void RemoveFromCart(int id)
+        {
+            var product = _context.Products.Find(id);
+            if (product != null)
+            {
+                var cp = _context.CustomerProductCarts.FirstOrDefault(cp => cp.CustomerId == User.FindFirstValue(ClaimTypes.NameIdentifier) && cp.ProductId == id);
+                if (cp != null)
+                {
+                    _context.CustomerProductCarts.Remove(cp);
+                    _context.SaveChanges();
+                }
+            }
         }
 
         private bool ProductExists(int id)

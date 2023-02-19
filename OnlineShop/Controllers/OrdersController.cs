@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -54,18 +55,32 @@ namespace OnlineShop.Controllers
         // POST: Orders/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost, ActionName("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,OrderDate,ETA,OrderStatus")] Order order)
+        public async Task<IActionResult> CreateOrder()
         {
-            if (ModelState.IsValid)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var products = from cp in _context.CustomerProductCarts
+                           join p in _context.Products
+                           on cp.ProductId equals p.Id
+                           where cp.CustomerId == userId
+                           select p;
+
+            var order = new Order()
             {
-                _context.Add(order);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(order);
+                Customer = _context.Customers.First(user => user.Id == userId),
+                OrderDate = DateTime.Now,
+                ETA = DateTime.Now + TimeSpan.FromDays(4),
+                OrderStatus = OrderStatus.Accepted,
+                Products = products.ToList()
+            };
+
+            _context.Orders.Add(order);
+            _context.CustomerProductCarts.RemoveRange(_context.CustomerProductCarts.Where(cp=>cp.CustomerId==userId));
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Orders/Edit/5
         public async Task<IActionResult> Edit(int? id)

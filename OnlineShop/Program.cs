@@ -12,7 +12,25 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContextPool<OnlineShopDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineShop")));
-builder.Services.AddIdentity<UserAccount, IdentityRole>().AddEntityFrameworkStores<OnlineShopDbContext>();
+builder.Services
+    .AddDefaultIdentity<UserAccount>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<OnlineShopDbContext>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+
+    options.Lockout.MaxFailedAccessAttempts = 3;
+    options.Lockout.AllowedForNewUsers = true;
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OnlyEmployees", policy =>
+    {
+        policy.RequireClaim("Department", "Products");
+    });
+});
 
 builder.Services.ConfigureApplicationCookie(config =>
 {
@@ -31,7 +49,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
