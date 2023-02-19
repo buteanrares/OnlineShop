@@ -38,11 +38,11 @@ namespace OnlineShop.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register([Bind("Username,FirstName,LastName,DateOfBirth,Password,ConfirmPassword")] RegisterViewModel registerViewModel)
+        public async Task<IActionResult> Register([Bind("UserName,FirstName,LastName,DateOfBirth,Password,ConfirmPassword")] RegisterViewModel registerViewModel)
         {
             if (ModelState.IsValid)
             {
-                var user = new UserAccount()
+                var user = new Customer()
                 {
                     UserName = registerViewModel.UserName,
                     Email = registerViewModel.UserName,

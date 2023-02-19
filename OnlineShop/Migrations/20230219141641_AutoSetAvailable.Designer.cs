@@ -12,8 +12,8 @@ using OnlineShop.DbContexts;
 namespace OnlineShop.Migrations
 {
     [DbContext(typeof(OnlineShopDbContext))]
-    [Migration("20230218143456_DateOfBirthUpdate")]
-    partial class DateOfBirthUpdate
+    [Migration("20230219141641_AutoSetAvailable")]
+    partial class AutoSetAvailable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,10 +178,12 @@ namespace OnlineShop.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -218,10 +220,12 @@ namespace OnlineShop.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -229,6 +233,36 @@ namespace OnlineShop.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.CustomerProductCart", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CustomerProductCarts");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.CustomerProductWishlist", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CustomerProductWishlists");
                 });
 
             modelBuilder.Entity("OnlineShop.Data.Entities.Order", b =>
@@ -267,11 +301,8 @@ namespace OnlineShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Available")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("CustomerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("CartId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -282,12 +313,13 @@ namespace OnlineShop.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<int>("Stock")
+                    b.Property<long>("Stock")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("WishlistId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
 
@@ -383,6 +415,44 @@ namespace OnlineShop.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OnlineShop.Data.Entities.CustomerProductCart", b =>
+                {
+                    b.HasOne("OnlineShop.Data.Entities.Customer", "Customer")
+                        .WithMany("CartProducts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineShop.Data.Entities.Product", "Product")
+                        .WithMany("CartCustomers")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OnlineShop.Data.Entities.CustomerProductWishlist", b =>
+                {
+                    b.HasOne("OnlineShop.Data.Entities.Customer", "Customer")
+                        .WithMany("WishlistProducts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineShop.Data.Entities.Product", "Product")
+                        .WithMany("WishlistCustomers")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("OnlineShop.Data.Entities.Order", b =>
                 {
                     b.HasOne("OnlineShop.Data.Entities.Customer", "Customer")
@@ -394,10 +464,6 @@ namespace OnlineShop.Migrations
 
             modelBuilder.Entity("OnlineShop.Data.Entities.Product", b =>
                 {
-                    b.HasOne("OnlineShop.Data.Entities.Customer", null)
-                        .WithMany("WishlistProducts")
-                        .HasForeignKey("CustomerId");
-
                     b.HasOne("OnlineShop.Data.Entities.Order", null)
                         .WithMany("Products")
                         .HasForeignKey("OrderId");
@@ -408,8 +474,17 @@ namespace OnlineShop.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("OnlineShop.Data.Entities.Product", b =>
+                {
+                    b.Navigation("CartCustomers");
+
+                    b.Navigation("WishlistCustomers");
+                });
+
             modelBuilder.Entity("OnlineShop.Data.Entities.Customer", b =>
                 {
+                    b.Navigation("CartProducts");
+
                     b.Navigation("Orders");
 
                     b.Navigation("WishlistProducts");

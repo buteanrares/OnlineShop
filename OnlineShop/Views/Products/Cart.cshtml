@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using OnlineShop.Data.Entities;
+@model IEnumerable<OnlineShop.Data.Entities.Product>
+@inject RoleManager<IdentityRole> RoleManager
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<h1>My Cart</h1>
+<br />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="RemoveFromCart" asp-route-id="@item.Id">Remove</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-primary" asp-action="Create" asp-controller="Orders">Order!</a>
