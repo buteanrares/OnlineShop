@@ -9,10 +9,12 @@
 
 <h1>List of products</h1>
 <br />
-
-<p>
-    <a class="btn btn-primary" asp-area="" asp-controller="Products" asp-action="Create">Create a product</a>
-</p>
+@if (this.User.IsInRole("Employee"))
+{
+    <p>
+        <a class="btn btn-primary" asp-area="" asp-controller="Products" asp-action="Create">Create a product</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -54,9 +56,17 @@
                     @Html.DisplayFor(modelItem => item.Available)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    @if (this.User.IsInRole("Employee")){
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        </div>
+                    }
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                    @if (this.User.IsInRole("Employee")){
+                        <div>
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                        </div>
+                    }
                     @{
                         if (item.Available)
                         {

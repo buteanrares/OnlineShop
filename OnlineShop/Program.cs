@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShop.Data.Entities;
 using OnlineShop.DbContexts;
-
+using OnlineShop.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +13,11 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddDbContextPool<OnlineShopDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineShop")));
 builder.Services
-    .AddDefaultIdentity<UserAccount>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddDefaultIdentity<UserAccount>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<OnlineShopDbContext>();
+
+builder.Services.AddSignalR();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -72,5 +74,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapHub<ChatHub>("/Support");
 
 app.Run();
