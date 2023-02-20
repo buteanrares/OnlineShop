@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,10 @@ using OnlineShop.DbContexts;
 
 namespace OnlineShop.Controllers
 {
+    [Authorize]
     public class OrdersController : Controller
     {
         private readonly OnlineShopDbContext _context;
-
         public OrdersController(OnlineShopDbContext context)
         {
             _context = context;
@@ -23,6 +24,12 @@ namespace OnlineShop.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
+            _context.Orders.ToList().ForEach(order =>
+            {
+                if (order.ETA < DateTime.Now)
+                    order.OrderStatus = OrderStatus.Completed;
+            });
+            await _context.SaveChangesAsync();
             return _context.Orders != null ?
                         View(await _context.Orders.ToListAsync()) :
                         Problem("Entity set 'OnlineShopDbContext.Orders'  is null.");
@@ -65,7 +72,10 @@ namespace OnlineShop.Controllers
                            on cp.ProductId equals p.Id
                            where cp.CustomerId == userId
                            select p;
-
+            if (!products.Any())
+            {
+                return RedirectToAction(nameof(Index));
+            }
             var order = new Order()
             {
                 Customer = _context.Customers.First(user => user.Id == userId),
@@ -76,7 +86,8 @@ namespace OnlineShop.Controllers
             };
 
             _context.Orders.Add(order);
-            _context.CustomerProductCarts.RemoveRange(_context.CustomerProductCarts.Where(cp=>cp.CustomerId==userId));
+            _context.CustomerProductCarts.RemoveRange(_context.CustomerProductCarts.Where(cp => cp.CustomerId == userId));
+            _context.Products.Where(p => products.Contains(p)).ToList().ForEach(p => --p.Stock);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

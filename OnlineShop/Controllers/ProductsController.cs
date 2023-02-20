@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Data.Entities;
 using OnlineShop.DbContexts;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineShop.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly OnlineShopDbContext _context;
@@ -45,14 +47,14 @@ namespace OnlineShop.Controllers
         }
 
         // GET: Products/Create
-        //[Authorize(Policy = "OnlyEmployees")]
+        [Authorize(Roles = "Employee")]
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        //[Authorize(Policy = "OnlyEmployees")]
+        [Authorize(Roles = "Employee")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock")] Product product)
         {
@@ -65,7 +67,7 @@ namespace OnlineShop.Controllers
             return View(product);
         }
 
-        // GET: Products/Edit/5
+        [Authorize(Roles = "Employee")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Products == null)
@@ -86,6 +88,7 @@ namespace OnlineShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Stock,Available")] Product product)
         {
             if (id != product.Id)
@@ -116,7 +119,7 @@ namespace OnlineShop.Controllers
             return View(product);
         }
 
-        // GET: Products/Delete/5
+        [Authorize(Roles = "Employee")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Products == null)
@@ -134,7 +137,7 @@ namespace OnlineShop.Controllers
             return View(product);
         }
 
-        // POST: Products/Delete/5
+        [Authorize(Roles = "Employee")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

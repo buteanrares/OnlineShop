@@ -5,6 +5,7 @@ using System.Diagnostics;
 
 namespace OnlineShop.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -19,12 +20,6 @@ namespace OnlineShop.Controllers
             return View();
         }
 
-        [Authorize]
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -34,7 +29,12 @@ namespace OnlineShop.Controllers
 
         public IActionResult Register()
         {
-            return View(new RegisterViewModel { UserName="rares"});
+            return View(new RegisterViewModel());
+        }
+
+        public IActionResult Support()
+        {
+            return View();
         }
     }
 }

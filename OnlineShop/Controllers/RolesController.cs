@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Data.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace OnlineShop.Controllers
 {
+    [Authorize(Roles = "Employee")]
     public class RolesController : Controller
     {
         private RoleManager<IdentityRole> RoleManager;
